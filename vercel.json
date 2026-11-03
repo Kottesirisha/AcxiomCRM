@@ -1,4 +1,9 @@
 {
   "version": 2,
-  "cleanUrls": true
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "https://acxiomcrm-c6u0.onrender.com/$1"
+    }
+  ]
 }
