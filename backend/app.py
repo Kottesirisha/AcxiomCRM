@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 from flask import Flask, render_template
+from flask_cors import CORS
 from config import Config
 from extensions import db, login_manager, csrf
 from models import User, Role, Permission, role_permissions
@@ -26,6 +27,9 @@ def create_app(config_class=Config):
     )
 
     app.config.from_object(config_class)
+
+    # Enable CORS for decoupled frontends (e.g. Vercel)
+    CORS(app, supports_credentials=True, origins=["*"])
 
     # Initialize extensions
     db.init_app(app)

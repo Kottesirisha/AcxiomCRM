@@ -1,19 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "backend/app.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/frontend/static/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "backend/app.py"
+      "source": "/(.*)",
+      "destination": "https://YOUR-RENDER-BACKEND.onrender.com/$1"
     }
   ]
 }
