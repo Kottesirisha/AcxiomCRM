@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Leads{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Leads</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-funnel me-2"></i>Leads</h1>
+    <a href="{{ url_for('leads.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Lead</a>
+</div>
+<div class="filter-bar">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Search</label>
+            <input type="text" class="form-control" name="search" value="{{ request.args.get('search','') }}" placeholder="Name, email, company...">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                {% for s in ['New','Contacted','Qualified','Unqualified','Converted'] %}
+                <option value="{{ s }}" {% if request.args.get('status') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Source</label>
+            <select class="form-select" name="source">
+                <option value="">All</option>
+                {% for s in ['Web','Referral','Cold Call','Advertisement','Partner','Other'] %}
+                <option value="{{ s }}" {% if request.args.get('source') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Search</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ url_for('leads.list_leads') }}" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+    </form>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        {% if leads.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Company</th><th>Source</th><th>Status</th><th>Rating</th><th>Assigned To</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for l in leads.items %}
+                    <tr>
+                        <td>{{ l.id }}</td>
+                        <td><a href="{{ url_for('leads.detail', id=l.id) }}" class="text-decoration-none fw-medium">{{ l.name }}</a></td>
+                        <td>{{ l.email or '-' }}</td>
+                        <td>{{ l.company or '-' }}</td>
+                        <td>{{ l.source or '-' }}</td>
+                        <td><span class="badge badge-{{ l.status|lower }}">{{ l.status }}</span></td>
+                        <td>{% if l.rating %}<span class="badge badge-{{ l.rating|lower }}">{{ l.rating }}</span>{% else %}-{% endif %}</td>
+                        <td>{{ l.assigned_user.full_name if l.assigned_user else '-' }}</td>
+                        <td style="font-size:0.85rem;">{{ l.created_at.strftime('%b %d, %Y') }}</td>
+                        <td class="text-nowrap">
+                            <a href="{{ url_for('leads.detail', id=l.id) }}" class="btn btn-sm btn-outline-primary btn-icon" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="{{ url_for('leads.edit', id=l.id) }}" class="btn btn-sm btn-outline-warning btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                            {% if l.status == 'Qualified' and not l.converted %}
+                            <a href="{{ url_for('leads.convert', id=l.id) }}" class="btn btn-sm btn-outline-success btn-icon" title="Convert"><i class="bi bi-arrow-repeat"></i></a>
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-danger btn-icon" data-delete-url="{{ url_for('leads.delete', id=l.id) }}" data-delete-name="{{ l.name }}"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if leads.pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center p-3">
+            <span class="text-muted" style="font-size:0.85rem;">Showing {{ leads.items|length }} of {{ leads.total }}</span>
+            <nav><ul class="pagination pagination-sm mb-0">
+                {% if leads.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ leads.prev_num }}&search={{ request.args.get('search','') }}&status={{ request.args.get('status','') }}&source={{ request.args.get('source','') }}">&laquo;</a></li>{% endif %}
+                {% for p in leads.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}<li class="page-item {% if p == leads.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}&search={{ request.args.get('search','') }}&status={{ request.args.get('status','') }}&source={{ request.args.get('source','') }}">{{ p }}</a></li>
+                {% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+                {% endfor %}
+                {% if leads.has_next %}<li class="page-item"><a class="page-link" href="?page={{ leads.next_num }}&search={{ request.args.get('search','') }}&status={{ request.args.get('status','') }}&source={{ request.args.get('source','') }}">&raquo;</a></li>{% endif %}
+            </ul></nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state"><i class="bi bi-funnel"></i><p>No leads found</p>
+            <a href="{{ url_for('leads.create') }}" class="btn btn-primary btn-sm mt-2"><i class="bi bi-plus-lg me-1"></i>Add Lead</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

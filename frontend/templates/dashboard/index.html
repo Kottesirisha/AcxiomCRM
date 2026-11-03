@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+{% block content %}
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="kpi-label">Total Customers</p>
+                        <p class="kpi-value">{{ total_customers }}</p>
+                    </div>
+                    <div class="kpi-icon" style="background:#3B82F6;"><i class="bi bi-people"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="kpi-label">Total Leads</p>
+                        <p class="kpi-value">{{ total_leads }}</p>
+                    </div>
+                    <div class="kpi-icon" style="background:#14B8A6;"><i class="bi bi-funnel"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="kpi-label">Open Opps</p>
+                        <p class="kpi-value">{{ open_opportunities }}</p>
+                    </div>
+                    <div class="kpi-icon" style="background:#6366F1;"><i class="bi bi-graph-up-arrow"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="kpi-label">Won Opps</p>
+                        <p class="kpi-value">{{ won_opportunities }}</p>
+                    </div>
+                    <div class="kpi-icon" style="background:#10B981;"><i class="bi bi-trophy"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="kpi-label">Lost Opps</p>
+                        <p class="kpi-value">{{ lost_opportunities }}</p>
+                    </div>
+                    <div class="kpi-icon" style="background:#EF4444;"><i class="bi bi-x-circle"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="kpi-label">Pipeline Value</p>
+                        <p class="kpi-value" style="font-size:1.3rem;"><span class="currency">{{ total_pipeline }}</span></p>
+                    </div>
+                    <div class="kpi-icon" style="background:#8B5CF6;"><i class="bi bi-currency-dollar"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="pipelineChart" data-chart='{{ pipeline_chart | tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="statusChart" data-chart='{{ status_chart | tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Data -->
+<div class="row g-3 mb-4">
+    <!-- Recent Customers -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-people me-2"></i>Recent Customers</span>
+                <a href="{{ url_for('customers.list_customers') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_customers %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for c in recent_customers %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('customers.detail', id=c.id) }}" class="text-decoration-none fw-medium">{{ c.name }}</a>
+                                    <div class="text-muted" style="font-size:0.75rem;">{{ c.company or '' }}</div>
+                                </td>
+                                <td class="text-muted" style="font-size:0.8rem;">{{ c.created_at.strftime('%b %d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4"><i class="bi bi-people"></i><p>No customers yet</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Leads -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-funnel me-2"></i>Recent Leads</span>
+                <a href="{{ url_for('leads.list_leads') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_leads %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for l in recent_leads %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('leads.detail', id=l.id) }}" class="text-decoration-none fw-medium">{{ l.name }}</a>
+                                    <div class="text-muted" style="font-size:0.75rem;">{{ l.source or '' }}</div>
+                                </td>
+                                <td><span class="badge badge-{{ l.status|lower }}">{{ l.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4"><i class="bi bi-funnel"></i><p>No leads yet</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Follow-ups -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar-check me-2"></i>Upcoming Follow-ups</span>
+                <a href="{{ url_for('followups.list_followups') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming_followups %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for f in upcoming_followups %}
+                            <tr>
+                                <td>
+                                    <span class="fw-medium">{{ f.subject }}</span>
+                                    <div class="text-muted" style="font-size:0.75rem;">
+                                        {{ f.due_date.strftime('%b %d, %H:%M') }}
+                                        {% if f.is_overdue %}<span class="badge badge-overdue ms-1">Overdue</span>{% endif %}
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-{{ f.status|lower }}">{{ f.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4"><i class="bi bi-calendar-check"></i><p>No upcoming follow-ups</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-activity me-2"></i>Recent Activities</span>
+        <a href="{{ url_for('activities.list_activities') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body p-0">
+        {% if recent_activities %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Subject</th><th>Type</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for a in recent_activities %}
+                    <tr>
+                        <td><a href="{{ url_for('activities.detail', id=a.id) }}" class="text-decoration-none">{{ a.subject }}</a></td>
+                        <td>
+                            <i class="bi {% if a.type == 'Call' %}bi-telephone{% elif a.type == 'Meeting' %}bi-camera-video{% elif a.type == 'Email' %}bi-envelope{% else %}bi-check2-square{% endif %} me-1"></i>
+                            {{ a.type }}
+                        </td>
+                        <td class="text-muted" style="font-size:0.85rem;">{{ a.activity_date.strftime('%b %d, %H:%M') }}</td>
+                        <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4"><i class="bi bi-activity"></i><p>No activities yet</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Convert Lead{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('leads.list_leads') }}">Leads</a></li>
+<li class="breadcrumb-item active">Convert Lead</li>
+{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="bi bi-arrow-repeat me-2"></i>Convert Lead: {{ lead.name }}</h1></div>
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-person-plus me-2"></i>Customer Information</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" required value="{{ lead.name }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" value="{{ lead.email or '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-control" name="phone" value="{{ lead.phone or '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-control" name="company" value="{{ lead.company or '' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Industry</label>
+                    <select class="form-select" name="industry">
+                        <option value="">Select</option>
+                        {% for ind in ['Technology','Healthcare','Finance','Manufacturing','Retail','Education','Other'] %}
+                        <option value="{{ ind }}">{{ ind }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-control" name="address">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">City</label>
+                    <input type="text" class="form-control" name="city">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">State</label>
+                    <input type="text" class="form-control" name="state">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Country</label>
+                    <input type="text" class="form-control" name="country">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="create_opportunity" name="create_opportunity" value="1">
+                <label class="form-check-label fw-bold" for="create_opportunity"><i class="bi bi-graph-up-arrow me-1"></i>Also Create an Opportunity</label>
+            </div>
+        </div>
+        <div class="card-body" id="opportunityFields" style="display:none;">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Opportunity Name</label>
+                    <input type="text" class="form-control" name="opp_name" value="{{ lead.company or lead.name }} - Opportunity">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-control" name="opp_amount" step="0.01" value="0">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Stage</label>
+                    <select class="form-select" name="opp_stage">
+                        {% for s in ['Qualification','Needs Analysis','Proposal','Negotiation'] %}
+                        <option value="{{ s }}">{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Expected Close Date</label>
+                    <input type="date" class="form-control" name="opp_close_date">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success"><i class="bi bi-arrow-repeat me-1"></i>Convert Lead</button>
+        <a href="{{ url_for('leads.detail', id=lead.id) }}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

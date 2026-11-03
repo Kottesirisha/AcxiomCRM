@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Opportunities{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Opportunities</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-graph-up-arrow me-2"></i>Opportunities</h1>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('opportunities.pipeline') }}" class="btn btn-outline-primary"><i class="bi bi-kanban me-1"></i>Pipeline View</a>
+        <a href="{{ url_for('opportunities.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Opportunity</a>
+    </div>
+</div>
+<div class="filter-bar">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Search</label>
+            <input type="text" class="form-control" name="search" value="{{ request.args.get('search','') }}" placeholder="Opportunity name...">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Stage</label>
+            <select class="form-select" name="stage">
+                <option value="">All Stages</option>
+                {% for s in ['Qualification','Needs Analysis','Proposal','Negotiation','Closed Won','Closed Lost'] %}
+                <option value="{{ s }}" {% if request.args.get('stage') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Search</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ url_for('opportunities.list_opportunities') }}" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+    </form>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        {% if opportunities.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>ID</th><th>Name</th><th>Customer</th><th>Amount</th><th>Stage</th><th>Probability</th><th>Expected Close</th><th>Assigned To</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for o in opportunities.items %}
+                    <tr>
+                        <td>{{ o.id }}</td>
+                        <td><a href="{{ url_for('opportunities.detail', id=o.id) }}" class="text-decoration-none fw-medium">{{ o.name }}</a></td>
+                        <td><a href="{{ url_for('customers.detail', id=o.customer.id) }}">{{ o.customer.name }}</a></td>
+                        <td class="currency fw-medium">{{ o.amount }}</td>
+                        <td><span class="badge bg-{% if o.stage == 'Closed Won' %}success{% elif o.stage == 'Closed Lost' %}danger{% elif o.stage == 'Negotiation' %}warning{% elif o.stage == 'Proposal' %}info{% else %}primary{% endif %}">{{ o.stage }}</span></td>
+                        <td>{{ o.probability }}%</td>
+                        <td>{{ o.expected_close_date.strftime('%b %d, %Y') if o.expected_close_date else '-' }}</td>
+                        <td>{{ o.assigned_user.full_name if o.assigned_user else '-' }}</td>
+                        <td class="text-nowrap">
+                            <a href="{{ url_for('opportunities.detail', id=o.id) }}" class="btn btn-sm btn-outline-primary btn-icon"><i class="bi bi-eye"></i></a>
+                            <a href="{{ url_for('opportunities.edit', id=o.id) }}" class="btn btn-sm btn-outline-warning btn-icon"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger btn-icon" data-delete-url="{{ url_for('opportunities.delete', id=o.id) }}" data-delete-name="{{ o.name }}"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if opportunities.pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center p-3">
+            <span class="text-muted" style="font-size:0.85rem;">Showing {{ opportunities.items|length }} of {{ opportunities.total }}</span>
+            <nav><ul class="pagination pagination-sm mb-0">
+                {% if opportunities.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ opportunities.prev_num }}&search={{ request.args.get('search','') }}&stage={{ request.args.get('stage','') }}">&laquo;</a></li>{% endif %}
+                {% for p in opportunities.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}<li class="page-item {% if p == opportunities.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}&search={{ request.args.get('search','') }}&stage={{ request.args.get('stage','') }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+                {% endfor %}
+                {% if opportunities.has_next %}<li class="page-item"><a class="page-link" href="?page={{ opportunities.next_num }}&search={{ request.args.get('search','') }}&stage={{ request.args.get('stage','') }}">&raquo;</a></li>{% endif %}
+            </ul></nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state"><i class="bi bi-graph-up-arrow"></i><p>No opportunities found</p>
+            <a href="{{ url_for('opportunities.create') }}" class="btn btn-primary btn-sm mt-2"><i class="bi bi-plus-lg me-1"></i>Add Opportunity</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

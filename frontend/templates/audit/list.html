@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Audit Log{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Audit Log</li>
+{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="bi bi-journal-text me-2"></i>Audit Log</h1></div>
+<div class="filter-bar">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">User</label>
+            <select class="form-select" name="user_id">
+                <option value="">All Users</option>
+                {% for u in users %}<option value="{{ u.id }}" {% if request.args.get('user_id') == u.id|string %}selected{% endif %}>{{ u.full_name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Action</label>
+            <select class="form-select" name="action">
+                <option value="">All</option>
+                {% for a in ['Login','Create','Update','Delete'] %}<option value="{{ a }}" {% if request.args.get('action') == a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Entity</label>
+            <select class="form-select" name="entity">
+                <option value="">All</option>
+                {% for e in ['Customer','Lead','Opportunity','FollowUp','Activity','User'] %}<option value="{{ e }}" {% if request.args.get('entity') == e %}selected{% endif %}>{{ e }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">From</label>
+            <input type="date" class="form-control" name="date_from" value="{{ request.args.get('date_from','') }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">To</label>
+            <input type="date" class="form-control" name="date_to" value="{{ request.args.get('date_to','') }}">
+        </div>
+        <div class="col-md-1"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter"></i></button></div>
+        <div class="col-md-1"><a href="{{ url_for('audit.list_logs') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-lg"></i></a></div>
+    </form>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        {% if logs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Entity</th><th>Entity ID</th><th>Description</th><th>IP Address</th></tr></thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td style="font-size:0.85rem;white-space:nowrap;">{{ log.timestamp.strftime('%b %d, %Y %H:%M:%S') }}</td>
+                        <td>{{ log.user.full_name if log.user else 'System' }}</td>
+                        <td><span class="badge bg-{% if log.action == 'Login' %}info{% elif log.action == 'Create' %}success{% elif log.action == 'Update' %}warning{% elif log.action == 'Delete' %}danger{% else %}secondary{% endif %}">{{ log.action }}</span></td>
+                        <td>{{ log.entity or '-' }}</td>
+                        <td>{{ log.entity_id or '-' }}</td>
+                        <td style="font-size:0.85rem;max-width:300px;" class="text-truncate">{{ log.description or '-' }}</td>
+                        <td style="font-size:0.8rem;">{{ log.ip_address or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if logs.pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center p-3">
+            <span class="text-muted" style="font-size:0.85rem;">{{ logs.total }} entries</span>
+            <nav><ul class="pagination pagination-sm mb-0">{% if logs.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ logs.prev_num }}&user_id={{ request.args.get('user_id','') }}&action={{ request.args.get('action','') }}&entity={{ request.args.get('entity','') }}&date_from={{ request.args.get('date_from','') }}&date_to={{ request.args.get('date_to','') }}">&laquo;</a></li>{% endif %}{% for p in logs.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}{% if p %}<li class="page-item {% if p == logs.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}&user_id={{ request.args.get('user_id','') }}&action={{ request.args.get('action','') }}&entity={{ request.args.get('entity','') }}&date_from={{ request.args.get('date_from','') }}&date_to={{ request.args.get('date_to','') }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}{% if logs.has_next %}<li class="page-item"><a class="page-link" href="?page={{ logs.next_num }}&user_id={{ request.args.get('user_id','') }}&action={{ request.args.get('action','') }}&entity={{ request.args.get('entity','') }}&date_from={{ request.args.get('date_from','') }}&date_to={{ request.args.get('date_to','') }}">&raquo;</a></li>{% endif %}</ul></nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state"><i class="bi bi-journal-text"></i><p>No audit log entries found</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

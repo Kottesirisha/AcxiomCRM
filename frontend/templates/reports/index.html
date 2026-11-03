@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Reports & Analytics{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Reports</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-file-earmark-bar-graph me-2"></i>Executive Reports & Data Export</h1>
+</div>
+
+<!-- Performance Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <p class="kpi-label">Lead Conversion Rate</p>
+                <p class="kpi-value text-primary">{{ conversion_rate }}%</p>
+                <small class="text-muted">Total leads analyzed: {{ leads|length }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <p class="kpi-label">Closed Won Revenue</p>
+                <p class="kpi-value text-success currency">{{ total_won_value }}</p>
+                <small class="text-muted">Realized sales outcome</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <p class="kpi-label">Open Pipeline Value</p>
+                <p class="kpi-value currency">{{ total_pipeline_value }}</p>
+                <small class="text-muted">Unclosed deal pipeline</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card kpi-card">
+            <div class="card-body">
+                <p class="kpi-label">Weighted Pipeline</p>
+                <p class="kpi-value text-info currency">{{ weighted_pipeline_value }}</p>
+                <small class="text-muted">Probability-adjusted forecast</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Section -->
+<div class="card mb-4">
+    <div class="card-header bg-white"><i class="bi bi-download me-2"></i>Data Export Center</div>
+    <div class="card-body">
+        <p class="text-muted mb-3">Download comprehensive tabular reports in CSV format for business intelligence, audits, and spreadsheet analysis.</p>
+        <div class="d-flex flex-wrap gap-3">
+            <a href="{{ url_for('reports.export_csv', report_type='customers') }}" class="btn btn-outline-primary">
+                <i class="bi bi-filetype-csv me-1"></i>Export Customer Report
+            </a>
+            <a href="{{ url_for('reports.export_csv', report_type='leads') }}" class="btn btn-outline-info">
+                <i class="bi bi-filetype-csv me-1"></i>Export Leads & Conversion Report
+            </a>
+            <a href="{{ url_for('reports.export_csv', report_type='opportunities') }}" class="btn btn-outline-success">
+                <i class="bi bi-filetype-csv me-1"></i>Export Sales Pipeline Report
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Tabular Summaries -->
+<div class="card">
+    <div class="card-header bg-white">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#leadSummary">Lead Conversion Performance</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#oppSummary">Pipeline Stage Distribution</a></li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="leadSummary">
+                <table class="table table-hover">
+                    <thead><tr><th>Lead Name</th><th>Company</th><th>Source</th><th>Status</th><th>Converted Date</th><th>Outcome</th></tr></thead>
+                    <tbody>
+                        {% for l in leads %}
+                        <tr>
+                            <td class="fw-medium">{{ l.name }}</td>
+                            <td>{{ l.company or '-' }}</td>
+                            <td>{{ l.source or 'Direct' }}</td>
+                            <td><span class="badge badge-{{ l.status|lower }}">{{ l.status }}</span></td>
+                            <td>{{ l.converted_date.strftime('%b %d, %Y') if l.converted_date else 'Pending' }}</td>
+                            <td>
+                                {% if l.converted %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Customer Account</span>
+                                {% else %}
+                                <span class="badge bg-secondary">In Funnel</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="oppSummary">
+                <table class="table table-hover">
+                    <thead><tr><th>Opportunity</th><th>Customer</th><th>Amount</th><th>Stage</th><th>Probability</th><th>Expected Close</th></tr></thead>
+                    <tbody>
+                        {% for o in opportunities %}
+                        <tr>
+                            <td class="fw-medium">{{ o.name }}</td>
+                            <td>{{ o.customer.name if o.customer else '-' }}</td>
+                            <td class="currency">{{ o.amount }}</td>
+                            <td><span class="badge bg-{% if o.stage == 'Closed Won' %}success{% elif o.stage == 'Closed Lost' %}danger{% else %}primary{% endif %}">{{ o.stage }}</span></td>
+                            <td>{{ o.probability }}%</td>
+                            <td>{{ o.expected_close_date.strftime('%b %d, %Y') if o.expected_close_date else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

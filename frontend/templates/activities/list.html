@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Activities{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Activities</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-activity me-2"></i>Activities</h1>
+    <a href="{{ url_for('activities.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Create Activity</a>
+</div>
+<div class="filter-bar">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Type</label>
+            <select class="form-select" name="type">
+                <option value="">All Types</option>
+                {% for t in ['Call','Meeting','Email','Task'] %}
+                <option value="{{ t }}" {% if request.args.get('type') == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                {% for s in ['Planned','Completed','Cancelled'] %}
+                <option value="{{ s }}" {% if request.args.get('status') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter me-1"></i>Filter</button></div>
+        <div class="col-md-2"><a href="{{ url_for('activities.list_activities') }}" class="btn btn-outline-secondary w-100">Clear</a></div>
+    </form>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        {% if activities.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Subject</th><th>Type</th><th>Related To</th><th>Assigned To</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for a in activities.items %}
+                    <tr>
+                        <td><a href="{{ url_for('activities.detail', id=a.id) }}" class="text-decoration-none fw-medium">{{ a.subject }}</a></td>
+                        <td><i class="bi {% if a.type == 'Call' %}bi-telephone{% elif a.type == 'Meeting' %}bi-camera-video{% elif a.type == 'Email' %}bi-envelope{% else %}bi-check2-square{% endif %} me-1"></i>{{ a.type }}</td>
+                        <td>{% if a.customer %}<a href="{{ url_for('customers.detail', id=a.customer.id) }}">{{ a.customer.name }}</a>{% elif a.lead %}<a href="{{ url_for('leads.detail', id=a.lead.id) }}">{{ a.lead.name }}</a>{% elif a.opportunity %}<a href="{{ url_for('opportunities.detail', id=a.opportunity.id) }}">{{ a.opportunity.name }}</a>{% else %}-{% endif %}</td>
+                        <td>{{ a.assignee.full_name if a.assignee else '-' }}</td>
+                        <td style="font-size:0.85rem;">{{ a.activity_date.strftime('%b %d, %Y %H:%M') }}</td>
+                        <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+                        <td class="text-nowrap">
+                            <a href="{{ url_for('activities.detail', id=a.id) }}" class="btn btn-sm btn-outline-primary btn-icon"><i class="bi bi-eye"></i></a>
+                            <a href="{{ url_for('activities.edit', id=a.id) }}" class="btn btn-sm btn-outline-warning btn-icon"><i class="bi bi-pencil"></i></a>
+                            {% if a.status != 'Completed' %}
+                            <form method="POST" action="{{ url_for('activities.complete', id=a.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/><button class="btn btn-sm btn-outline-success btn-icon" title="Complete"><i class="bi bi-check-lg"></i></button></form>
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-danger btn-icon" data-delete-url="{{ url_for('activities.delete', id=a.id) }}" data-delete-name="{{ a.subject }}"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if activities.pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center p-3">
+            <span class="text-muted" style="font-size:0.85rem;">{{ activities.total }} activities</span>
+            <nav><ul class="pagination pagination-sm mb-0">{% if activities.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ activities.prev_num }}&type={{ request.args.get('type','') }}&status={{ request.args.get('status','') }}">&laquo;</a></li>{% endif %}{% for p in activities.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}{% if p %}<li class="page-item {% if p == activities.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}&type={{ request.args.get('type','') }}&status={{ request.args.get('status','') }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}{% if activities.has_next %}<li class="page-item"><a class="page-link" href="?page={{ activities.next_num }}&type={{ request.args.get('type','') }}&status={{ request.args.get('status','') }}">&raquo;</a></li>{% endif %}</ul></nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state"><i class="bi bi-activity"></i><p>No activities found</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

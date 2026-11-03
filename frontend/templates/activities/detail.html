@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{{ activity.subject }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('activities.list_activities') }}">Activities</a></li>
+<li class="breadcrumb-item active">{{ activity.subject }}</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi {% if activity.type == 'Call' %}bi-telephone{% elif activity.type == 'Meeting' %}bi-camera-video{% elif activity.type == 'Email' %}bi-envelope{% else %}bi-check2-square{% endif %} me-2"></i>{{ activity.subject }}</h1>
+    <div class="d-flex gap-2">
+        {% if activity.status != 'Completed' %}
+        <form method="POST" action="{{ url_for('activities.complete', id=activity.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/><button class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Complete</button></form>
+        {% endif %}
+        <a href="{{ url_for('activities.edit', id=activity.id) }}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Edit</a>
+        <button class="btn btn-danger" data-delete-url="{{ url_for('activities.delete', id=activity.id) }}" data-delete-name="{{ activity.subject }}"><i class="bi bi-trash me-1"></i>Delete</button>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header"><i class="bi bi-info-circle me-2"></i>Activity Details</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3"><div class="detail-label">Subject</div><div class="detail-value">{{ activity.subject }}</div></div>
+            <div class="col-md-3"><div class="detail-label">Type</div><div class="detail-value"><i class="bi {% if activity.type == 'Call' %}bi-telephone{% elif activity.type == 'Meeting' %}bi-camera-video{% elif activity.type == 'Email' %}bi-envelope{% else %}bi-check2-square{% endif %} me-1"></i>{{ activity.type }}</div></div>
+            <div class="col-md-3"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-{{ activity.status|lower }}">{{ activity.status }}</span></div></div>
+            <div class="col-md-3"><div class="detail-label">Date</div><div class="detail-value">{{ activity.activity_date.strftime('%b %d, %Y %H:%M') if activity.activity_date else '-' }}</div></div>
+            <div class="col-md-3"><div class="detail-label">Assigned To</div><div class="detail-value">{{ activity.assignee.full_name if activity.assignee else '-' }}</div></div>
+            <div class="col-md-3"><div class="detail-label">Customer</div><div class="detail-value">{% if activity.customer %}<a href="{{ url_for('customers.detail', id=activity.customer.id) }}">{{ activity.customer.name }}</a>{% else %}-{% endif %}</div></div>
+            <div class="col-md-3"><div class="detail-label">Lead</div><div class="detail-value">{% if activity.lead %}<a href="{{ url_for('leads.detail', id=activity.lead.id) }}">{{ activity.lead.name }}</a>{% else %}-{% endif %}</div></div>
+            <div class="col-md-3"><div class="detail-label">Opportunity</div><div class="detail-value">{% if activity.opportunity %}<a href="{{ url_for('opportunities.detail', id=activity.opportunity.id) }}">{{ activity.opportunity.name }}</a>{% else %}-{% endif %}</div></div>
+            {% if activity.description %}
+            <div class="col-12"><div class="detail-label">Description</div><div class="detail-value">{{ activity.description }}</div></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

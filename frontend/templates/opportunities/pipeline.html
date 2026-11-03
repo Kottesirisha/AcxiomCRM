@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Sales Pipeline{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('opportunities.list_opportunities') }}">Opportunities</a></li>
+<li class="breadcrumb-item active">Pipeline</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-kanban me-2"></i>Sales Pipeline</h1>
+    <a href="{{ url_for('opportunities.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Opportunity</a>
+</div>
+
+<!-- Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card kpi-card"><div class="card-body text-center"><p class="kpi-label">Total Pipeline</p><p class="kpi-value currency" style="font-size:1.3rem;">{{ total_pipeline }}</p></div></div></div>
+    <div class="col-md-3"><div class="card kpi-card"><div class="card-body text-center"><p class="kpi-label">Weighted Pipeline</p><p class="kpi-value currency text-success" style="font-size:1.3rem;">{{ weighted_pipeline }}</p></div></div></div>
+    <div class="col-md-3"><div class="card kpi-card"><div class="card-body text-center"><p class="kpi-label">Won</p><p class="kpi-value currency text-success" style="font-size:1.3rem;">{{ won_total }}</p></div></div></div>
+    <div class="col-md-3"><div class="card kpi-card"><div class="card-body text-center"><p class="kpi-label">Lost</p><p class="kpi-value currency text-danger" style="font-size:1.3rem;">{{ lost_total }}</p></div></div></div>
+</div>
+
+<!-- Pipeline Stages -->
+<div class="row g-3">
+    {% for stage_name, stage_opps in pipeline.items() %}
+    <div class="col-lg-2">
+        <div class="pipeline-stage">
+            <div class="pipeline-header">
+                <span>{{ stage_name }}</span>
+                <span class="badge bg-secondary">{{ stage_opps|length }}</span>
+            </div>
+            <div class="pipeline-body">
+                {% for o in stage_opps %}
+                <div class="pipeline-card">
+                    <a href="{{ url_for('opportunities.detail', id=o.id) }}" class="text-decoration-none fw-medium d-block mb-1">{{ o.name }}</a>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ o.customer.name }}</div>
+                    <div class="fw-bold mt-1 currency">{{ o.amount }}</div>
+                    <div class="text-muted" style="font-size:0.7rem;">{{ o.probability }}% · {{ o.expected_close_date.strftime('%b %d') if o.expected_close_date else 'No date' }}</div>
+                </div>
+                {% endfor %}
+                {% if not stage_opps %}
+                <div class="text-center text-muted py-3" style="font-size:0.8rem;">No opportunities</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

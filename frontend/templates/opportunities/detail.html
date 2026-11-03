@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ opportunity.name }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('opportunities.list_opportunities') }}">Opportunities</a></li>
+<li class="breadcrumb-item active">{{ opportunity.name }}</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-graph-up-arrow me-2"></i>{{ opportunity.name }}</h1>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('opportunities.edit', id=opportunity.id) }}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Edit</a>
+        <button class="btn btn-danger" data-delete-url="{{ url_for('opportunities.delete', id=opportunity.id) }}" data-delete-name="{{ opportunity.name }}"><i class="bi bi-trash me-1"></i>Delete</button>
+    </div>
+</div>
+
+<!-- Stage Progress -->
+{% set stages = ['Qualification','Needs Analysis','Proposal','Negotiation','Closed Won','Closed Lost'] %}
+{% set current_idx = stages.index(opportunity.stage) if opportunity.stage in stages else 0 %}
+<div class="stage-progress mb-4">
+    {% for s in stages %}
+    {% if s != 'Closed Lost' %}
+    <div class="stage-step {% if loop.index0 < current_idx %}completed{% elif loop.index0 == current_idx %}active{% endif %}">{{ s }}</div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-info-circle me-2"></i>Details</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6"><div class="detail-label">Name</div><div class="detail-value">{{ opportunity.name }}</div></div>
+                    <div class="col-md-6"><div class="detail-label">Customer</div><div class="detail-value"><a href="{{ url_for('customers.detail', id=opportunity.customer.id) }}">{{ opportunity.customer.name }}</a></div></div>
+                    <div class="col-md-6"><div class="detail-label">Stage</div><div class="detail-value"><span class="badge bg-{% if opportunity.stage == 'Closed Won' %}success{% elif opportunity.stage == 'Closed Lost' %}danger{% else %}primary{% endif %} fs-6">{{ opportunity.stage }}</span></div></div>
+                    <div class="col-md-6"><div class="detail-label">Probability</div><div class="detail-value">{{ opportunity.probability }}%</div></div>
+                    <div class="col-md-6"><div class="detail-label">Expected Close</div><div class="detail-value">{{ opportunity.expected_close_date.strftime('%b %d, %Y') if opportunity.expected_close_date else '-' }}</div></div>
+                    <div class="col-md-6"><div class="detail-label">Assigned To</div><div class="detail-value">{{ opportunity.assigned_user.full_name if opportunity.assigned_user else '-' }}</div></div>
+                    <div class="col-md-6"><div class="detail-label">Created</div><div class="detail-value">{{ opportunity.created_at.strftime('%b %d, %Y %H:%M') }}</div></div>
+                    {% if opportunity.description %}
+                    <div class="col-12"><div class="detail-label">Description</div><div class="detail-value">{{ opportunity.description }}</div></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4 text-center">
+            <div class="card-body">
+                <div class="detail-label">Amount</div>
+                <div class="display-6 fw-bold text-primary currency">{{ opportunity.amount }}</div>
+                <hr>
+                <div class="detail-label">Weighted Value</div>
+                <div class="h4 fw-bold text-success currency">{{ opportunity.weighted_amount }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3"><li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#followups">Follow-ups</a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#activities">Activities</a></li></ul>
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="followups">
+        <div class="card"><div class="card-header d-flex justify-content-between"><span>Follow-ups</span><a href="{{ url_for('followups.create', opportunity_id=opportunity.id) }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add</a></div>
+        <div class="card-body p-0">{% if followups %}<table class="table table-hover mb-0"><thead><tr><th>Subject</th><th>Due Date</th><th>Status</th></tr></thead><tbody>{% for f in followups %}<tr><td>{{ f.subject }}</td><td>{{ f.due_date.strftime('%b %d, %Y %H:%M') }} {% if f.is_overdue %}<span class="badge badge-overdue">Overdue</span>{% endif %}</td><td><span class="badge badge-{{ f.status|lower }}">{{ f.status }}</span></td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty-state py-3"><p>No follow-ups</p></div>{% endif %}</div></div>
+    </div>
+    <div class="tab-pane fade" id="activities">
+        <div class="card"><div class="card-header d-flex justify-content-between"><span>Activities</span><a href="{{ url_for('activities.create', opportunity_id=opportunity.id) }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add</a></div>
+        <div class="card-body p-0">{% if activities %}<table class="table table-hover mb-0"><thead><tr><th>Subject</th><th>Type</th><th>Date</th><th>Status</th></tr></thead><tbody>{% for a in activities %}<tr><td><a href="{{ url_for('activities.detail', id=a.id) }}">{{ a.subject }}</a></td><td>{{ a.type }}</td><td>{{ a.activity_date.strftime('%b %d, %Y') }}</td><td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty-state py-3"><p>No activities</p></div>{% endif %}</div></div>
+    </div>
+</div>
+{% endblock %}

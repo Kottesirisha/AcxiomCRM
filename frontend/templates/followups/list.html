@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Follow-ups{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Follow-ups</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-calendar-check me-2"></i>Follow-ups</h1>
+    <a href="{{ url_for('followups.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Schedule Follow-up</a>
+</div>
+<div class="filter-bar">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+                <option value="">All</option>
+                {% for s in ['Pending','Completed','Cancelled'] %}
+                <option value="{{ s }}" {% if request.args.get('status') == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter me-1"></i>Filter</button></div>
+        <div class="col-md-2"><a href="{{ url_for('followups.list_followups') }}" class="btn btn-outline-secondary w-100">Clear</a></div>
+    </form>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        {% if followups.items %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Subject</th><th>Related To</th><th>Assigned To</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for f in followups.items %}
+                    <tr>
+                        <td class="fw-medium">{{ f.subject }}</td>
+                        <td>
+                            {% if f.customer %}<a href="{{ url_for('customers.detail', id=f.customer.id) }}"><i class="bi bi-people me-1"></i>{{ f.customer.name }}</a>
+                            {% elif f.lead %}<a href="{{ url_for('leads.detail', id=f.lead.id) }}"><i class="bi bi-funnel me-1"></i>{{ f.lead.name }}</a>
+                            {% elif f.opportunity %}<a href="{{ url_for('opportunities.detail', id=f.opportunity.id) }}"><i class="bi bi-graph-up-arrow me-1"></i>{{ f.opportunity.name }}</a>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>{{ f.assignee.full_name if f.assignee else '-' }}</td>
+                        <td>{{ f.due_date.strftime('%b %d, %Y %H:%M') }} {% if f.is_overdue %}<span class="badge badge-overdue">Overdue</span>{% endif %}</td>
+                        <td><span class="badge badge-{{ f.status|lower }}">{{ f.status }}</span></td>
+                        <td class="text-nowrap">
+                            <a href="{{ url_for('followups.edit', id=f.id) }}" class="btn btn-sm btn-outline-warning btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                            {% if f.status == 'Pending' %}
+                            <form method="POST" action="{{ url_for('followups.complete', id=f.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/><button class="btn btn-sm btn-outline-success btn-icon" title="Complete"><i class="bi bi-check-lg"></i></button></form>
+                            <form method="POST" action="{{ url_for('followups.cancel', id=f.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/><button class="btn btn-sm btn-outline-secondary btn-icon" title="Cancel"><i class="bi bi-x-lg"></i></button></form>
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-danger btn-icon" data-delete-url="{{ url_for('followups.delete', id=f.id) }}" data-delete-name="{{ f.subject }}"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if followups.pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center p-3">
+            <span class="text-muted" style="font-size:0.85rem;">{{ followups.total }} follow-ups</span>
+            <nav><ul class="pagination pagination-sm mb-0">{% if followups.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ followups.prev_num }}&status={{ request.args.get('status','') }}">&laquo;</a></li>{% endif %}{% for p in followups.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}{% if p %}<li class="page-item {% if p == followups.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}&status={{ request.args.get('status','') }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}{% if followups.has_next %}<li class="page-item"><a class="page-link" href="?page={{ followups.next_num }}&status={{ request.args.get('status','') }}">&raquo;</a></li>{% endif %}</ul></nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state"><i class="bi bi-calendar-check"></i><p>No follow-ups found</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

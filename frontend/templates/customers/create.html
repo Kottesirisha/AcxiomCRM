@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Add Customer{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('customers.list_customers') }}">Customers</a></li>
+<li class="breadcrumb-item active">Add Customer</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-person-plus me-2"></i>Add Customer</h1>
+</div>
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" required maxlength="100" value="{{ request.form.get('name', '') }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" maxlength="120" placeholder="user@example.com" value="{{ request.form.get('email', '') }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-control" name="phone" pattern="[\+]?[0-9\-\s]{7,20}" title="Enter a valid phone number (digits, spaces, or hyphens)" maxlength="20" placeholder="+1-555-0199" value="{{ request.form.get('phone', '') }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-control" name="company" value="{{ request.form.get('company', '') }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Industry</label>
+                    <select class="form-select" name="industry">
+                        <option value="">Select Industry</option>
+                        {% for ind in ['Technology','Healthcare','Finance','Manufacturing','Retail','Education','Other'] %}
+                        <option value="{{ ind }}" {% if request.form.get('industry') == ind %}selected{% endif %}>{{ ind }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Assigned To</label>
+                    <select class="form-select" name="assigned_to">
+                        <option value="">Select User</option>
+                        {% for u in users %}
+                        <option value="{{ u.id }}">{{ u.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-control" name="address" value="{{ request.form.get('address', '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">City</label>
+                    <input type="text" class="form-control" name="city" value="{{ request.form.get('city', '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">State</label>
+                    <input type="text" class="form-control" name="state" value="{{ request.form.get('state', '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Country</label>
+                    <input type="text" class="form-control" name="country" value="{{ request.form.get('country', '') }}">
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Customer</button>
+                <a href="{{ url_for('customers.list_customers') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
