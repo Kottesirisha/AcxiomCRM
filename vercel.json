@@ -1,9 +1,11 @@
+
 {
   "version": 2,
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "https://YOUR-RENDER-BACKEND.onrender.com/$1"
+      "destination": "https://acxiomcrm-c6u0.onrender.com/$1"
     }
   ]
 }
+
