@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: acxiomcrm
+    env: python
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt && flask seed-db"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: DATABASE_URL
+        value: sqlite:///instance/acxiomcrm.db
+      - key: ADMIN_EMAIL
+        value: admin@acxiomcrm.com
+      - key: ADMIN_PASSWORD
+        value: Admin@123
