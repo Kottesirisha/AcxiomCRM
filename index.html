@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcxiomCRM - Connecting to Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #fff;
+            padding: 20px;
+        }
+        .portal-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        .portal-logo {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #38BDF8;
+            margin-bottom: 12px;
+        }
+        .btn-portal {
+            background: #2563EB;
+            color: white;
+            font-weight: 600;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+        .btn-portal:hover {
+            background: #1D4ED8;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-card">
+        <div class="portal-logo">
+            <i class="bi bi-diamond-fill text-info"></i> AcxiomCRM
+        </div>
+        <h4 class="mb-3">Live Enterprise Cloud Service</h4>
+        <p class="text-secondary mb-4">
+            The CRM backend and database are hosted on Render. Click below to launch the portal.
+        </p>
+
+        <div id="actionArea">
+            <a id="portalLink" href="#" class="btn-portal mb-3">
+                <i class="bi bi-box-arrow-up-right"></i> Open AcxiomCRM App
+            </a>
+            <div id="urlHint" class="small text-muted mt-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // Set your backend URL below
+        const RENDER_BACKEND_URL = "https://acxiomcrm-1.onrender.com"; 
+
+        const linkEl = document.getElementById("portalLink");
+        const hintEl = document.getElementById("urlHint");
+
+        if (RENDER_BACKEND_URL && !RENDER_BACKEND_URL.includes("YOUR-RENDER-BACKEND")) {
+            linkEl.href = RENDER_BACKEND_URL;
+            hintEl.innerText = "Target Server: " + RENDER_BACKEND_URL;
+            // Optionally redirect automatically:
+            // window.location.href = RENDER_BACKEND_URL;
+        } else {
+            linkEl.href = "#";
+            linkEl.innerText = "Configure Render URL in index.html";
+            hintEl.innerText = "Please update RENDER_BACKEND_URL with your actual Render web service link.";
+        }
+    </script>
+</body>
+</html>
